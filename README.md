@@ -16,27 +16,51 @@ So let's define a functional interface <T>
 
 ```java
  public interface Handler {
-        void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException , IOException;
+        void execute(HttpServletRequest request, HttpServletResponse response, RouteEntry entry) throws ServletException , IOException;
  }
 ```
 The class responsible for defining route entries is WebRouting. WebRouting contains a Builder class to build a WebRouting instance.
 The routes are stored in a `List<RouteEntry<T>>`. Once you are done, it will create an unmodifiable List which will be the reentrant list for all requests (thread safety is important).
 
-A definition could look as follows:
+A definition could look as follows (see unit test):
 
 ```java
 WebRouting<Handler> router = new WebRouting
                 .Builder<>()
                 .addRoute(MethodAction.GET, "/info", RouteController.info)
-                .addRoute(MethodAction.POST, "/customer/(custId:int)/transfer", RouteController.payment)
+                .addRoute(MethodAction.GET, "/var/(var1:int)/next/(var2:string)", RouteController.vardata)
+                .addRoute(MethodAction.POST, "/transfer", RouteController.payment)
                 .build();
 ```
 When a requests comes in for /info, then the request will be delegated to method reference info (it should be possible to build a Controller class using annotations, like this is done with JAX-RS. But I keep it as simple as possible).
+
+The paths are matched in sequential order (using a stream). So the order is significant. This is mothing you should be aware of.
 
 The second route looks different. It contains a regex expression. A regex expression is enclosed within braces. It consists of two parts, a name and a type identifier. The type identifier can be int or string. 
 
 The class WebRouting uses two route definitions. One is used for plain-vanilla paths - `RouteStringKey` -, the other one parses the path in order to extract data that is needed for the delegated method - `RoutePatternKey` -.
 
+## WebRouting in action
+```java
+// the second route is selected
+Optional<RouteEntry<Handler>> entryOptional = router.matchEntry(MethodAction.valueOf("GET"), "/var/12345/next/abcde");
+entry = entryOptional.get();
+Handler handler = entry.getTarget();
+handler.execute(request, response, entry);
+```
+
+The handler (lambda expression) looks as follows
+```
+public static Handler  vardata = (request, response, route) -> {
+    String intValue    = route.getParameter("var1");
+    String stringValue = route.getParameter("var2");
+            
+    assertEquals("12345", intValue);
+    assertEquals("abcde", stringValue);
+};
+
+```
+## And finally
 This component is not complete yet, but it works pretty well.
 
 
