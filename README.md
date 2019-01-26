@@ -33,7 +33,7 @@ WebRouting<Handler> router = new WebRouting
 ```
 When a requests comes in for /info, then the request will be delegated to method reference info (it should be possible to build a Controller class using annotations, like this is done with JAX-RS. But I keep it as simple as possible).
 
-The second route looks different. It contains a regex expression. A regex expression is enclosed within braces. It consists of two parts, a name and a type identifier. The type identifier can be int of string. 
+The second route looks different. It contains a regex expression. A regex expression is enclosed within braces. It consists of two parts, a name and a type identifier. The type identifier can be int or string. 
 
 The class WebRouting uses two route definitions. One is used for plain-vanilla paths - `RouteStringKey` -, the other one parses the path in order to extract data that is needed for the delegated method - `RoutePatternKey` -.
 
