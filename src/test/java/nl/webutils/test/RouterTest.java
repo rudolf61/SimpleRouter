@@ -34,7 +34,7 @@ public class RouterTest {
     private static final ObjectMapper mapper = new ObjectMapper();
     
     public interface Handler {
-        void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException , IOException;
+        void execute(HttpServletRequest request, HttpServletResponse response, RouteEntry routeEntry) throws ServletException , IOException;
     }
 
     public static class Transfer {
@@ -71,7 +71,7 @@ public class RouterTest {
     
     public static class RouteController {
 
-        public static Handler info = (request, response) -> { 
+        public static Handler info = (request, response, route) -> { 
             String name = request.getParameter("name");
             assertEquals("Klaas", name);
 
@@ -81,7 +81,7 @@ public class RouterTest {
             sos.print("Hello World, " + name);
         };
         
-        public static Handler payment = (request, response) -> { 
+        public static Handler payment = (request, response, route) -> { 
             InputStream is = request.getInputStream();
             Transfer transfer = mapper.readValue(is, Transfer.class);
             assertEquals("Jan", transfer.getFrom());
@@ -91,6 +91,13 @@ public class RouterTest {
             response.setStatus(200);
             PrintWriter writer = response.getWriter();
             writer.write("Transfer processed");
+        };
+        private static Handler  vardata = (request, response, route) -> {
+            String intValue    = route.getParameter("var1");
+            String stringValue = route.getParameter("var2");
+            
+            assertEquals("12345", intValue);
+            assertEquals("abcde", stringValue);
         };
 
     }
@@ -104,6 +111,7 @@ public class RouterTest {
         WebRouting<Handler> router = new WebRouting
                 .Builder<>()
                 .addRoute(MethodAction.GET, "/info", RouteController.info)
+                .addRoute(MethodAction.GET, "/var/(var1:int)/next/(var2:string)", RouteController.vardata)
                 .addRoute(MethodAction.POST, "/transfer", RouteController.payment)
                 .build();
         
@@ -118,9 +126,16 @@ public class RouterTest {
         assertTrue(entryOptional.isPresent());
         RouteEntry<Handler> entry = entryOptional.get();
         Handler handler = entry.getTarget();
-        handler.execute(request, response);
+        handler.execute(request, response, entry);
         String responseString = new String(response.getData());
         assertEquals("Hello World, Klaas", responseString);
+
+        
+        entryOptional = router.matchEntry(MethodAction.valueOf(method), "/var/12345/next/abcde");
+        assertTrue(entryOptional.isPresent());
+        entry = entryOptional.get();
+        handler = entry.getTarget();
+        handler.execute(request, response, entry);
 
         entryOptional = router.matchEntry(MethodAction.valueOf("POST"), "/transfer");
         assertTrue(entryOptional.isPresent());
@@ -133,7 +148,8 @@ public class RouterTest {
         request.setInputStream(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
         response = new TestServletResponse();
         entry = entryOptional.get();
-        entry.getTarget().execute(request, response);
+        handler = entry.getTarget();
+        handler.execute(request, response, entry);
         
         
         
