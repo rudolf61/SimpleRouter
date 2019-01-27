@@ -62,7 +62,7 @@ public static Handler vardata = (request, response, matched) -> {
 
 ```
 ## And finally
-This component is not complete yet, but it works pretty well.
+Any suggestions are welcome.
 
 
 
