@@ -16,7 +16,7 @@ So let's define a functional interface <T>
 
 ```java
  public interface Handler {
-        void execute(HttpServletRequest request, HttpServletResponse response, RouteEntry entry) throws ServletException , IOException;
+        void execute(HttpServletRequest request, HttpServletResponse response, MatchedValues matchedValues) throws ServletException , IOException;
  }
 ```
 The class responsible for defining route entries is WebRouting. WebRouting contains a Builder class to build a WebRouting instance.
@@ -43,18 +43,19 @@ The class WebRouting uses two route definitions. One is used for plain-vanilla p
 ## WebRouting in action
 ```java
 // the second route is selected
-Optional<RouteEntry<Handler>> entryOptional = router.matchEntry(MethodAction.valueOf("GET"), "/var/12345/next/abcde");
-entry = entryOptional.get();
-Handler handler = entry.getTarget();
-handler.execute(request, response, entry);
+ MatchedValues matched = router.matchEntry(MethodAction.valueOf("GET"), "/var/12345/next/abcde");
+ assertTrue(matched.isMatch());
+ 
+ Handler handler = matched.getTarget();
+ handler.execute(request, response, matched);
 ```
 
 The handler (lambda expression) looks as follows
 ```
-public static Handler  vardata = (request, response, route) -> {
-    String intValue    = route.getParameter("var1");
-    String stringValue = route.getParameter("var2");
-            
+public static Handler vardata = (request, response, matched) -> {
+    String intValue    = matched.getParameter("var1");
+    String stringValue = matched.getParameter("var2");
+
     assertEquals("12345", intValue);
     assertEquals("abcde", stringValue);
 };
