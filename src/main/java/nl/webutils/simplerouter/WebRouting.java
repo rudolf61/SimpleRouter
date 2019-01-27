@@ -49,9 +49,15 @@ public class WebRouting<T> {
 
     }
 
-    public Optional<RouteEntry<T>> matchEntry(MethodAction action, String path) {
-        Optional<RouteEntry<T>> routeEntry = instances.stream().filter(entry -> entry.matches(action, path)).findFirst();
-        return routeEntry;
+    public MatchedValues matchEntry(MethodAction action, String path) {
+        for (RouteEntry entry : instances) {
+            MatchedValues matchedValues = entry.matches(action, path);
+            if (matchedValues.isMatch()) {
+                return matchedValues;
+            }
+        }
+
+        return MatchedValues.NO_MATCH;
     }
 
 }

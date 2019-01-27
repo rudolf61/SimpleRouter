@@ -6,11 +6,11 @@ import java.util.regex.Pattern;
 
 /**
  * Created by Rudolf de Grijs 2019
- * 
- * RouteEntry based on a REGEX. Supports string and number pattern. 
- * The Path pattern is defined as follows (<Path parameter name>:(int|string)) e.g. (id:int).
- * When it matches you will find id as a path parameter.
- * 
+ *
+ * RouteEntry based on a REGEX. Supports string and number pattern. The Path
+ * pattern is defined as follows (<Path parameter name>:(int|string)) e.g.
+ * (id:int). When it matches you will find id as a path parameter.
+ *
  * @param <T>
  */
 public class RoutePatternKey<T> extends AbstractRouteEntry<T> {
@@ -19,7 +19,6 @@ public class RoutePatternKey<T> extends AbstractRouteEntry<T> {
 
     private final Pattern pattern;
     private final List<String> keys;
-    private Map<String, String> matchValues;
 
     public RoutePatternKey(MethodAction action, String path, T target) {
         super(action, target);
@@ -37,7 +36,6 @@ public class RoutePatternKey<T> extends AbstractRouteEntry<T> {
 
         m.appendTail(sb);
 
-
         pattern = Pattern.compile(sb.toString());
     }
 
@@ -54,15 +52,17 @@ public class RoutePatternKey<T> extends AbstractRouteEntry<T> {
         return Matcher.quoteReplacement("(" + regex + ")");
     }
 
-    public boolean matches(MethodAction action, String path) {
+    public MatchedValues matches(MethodAction action, String path) {
 
-        if (action != getMethod())
-            return false;
+        if (action != getMethod()) {
+            return MatchedValues.NO_MATCH;
+        }
 
         String normPath = normalize(path);
         Matcher matcher = pattern.matcher(normPath);
 
         if (matcher.matches()) {
+            Map<String, String> matchValues = new HashMap<>();
 
             int count = matcher.groupCount();
             matchValues = new HashMap<>();
@@ -73,33 +73,10 @@ public class RoutePatternKey<T> extends AbstractRouteEntry<T> {
                 matchValues.put(key, value);
             }
 
-            return true;
+            return new MatchedValues(getTarget(), matchValues);
+        } else {
+            return MatchedValues.NO_MATCH;
         }
-        else {
-            matchValues = Collections.emptyMap();
-            return false;
-        }
-    }
-
-    @Override
-    public Map<String, String> getMatchedValues() {
-        return matchValues;
-    }
-
-
-    @Override
-    public String getParameter(String key) {
-        return matchValues.get(key);
-    }
-
-    @Override
-    public boolean containsKey(String key) {
-        return matchValues.containsKey(key);
-    }
-
-    @Override
-    public Set<String> keySet() {
-        return matchValues.keySet();
     }
 
 }
