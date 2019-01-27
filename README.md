@@ -1,9 +1,9 @@
 # SimpleRouter
 Simple router for delegating http requests
 ## Introduction
-Most router implementations are part of a framework. It is such a shame that we don't have a toolbox of small handy components, like PHP's Composer. I do hope that we will see something similar as packagist in the near future, a kind of market place for small, well tested components. Let's be honest: most often we don't need a ship (like Spring for example) to cross a ditch. Something smaller, build from well tested components would most often suit my needs.
+Most router implementations are part of a framework. It is such a shame that we don't have a market of small handy components, like PHP's Packagist (Composer). I do hope that we will see something similar within the Java community in the near future, a kind of market place for small, well tested components. Let's be honest: most often we don't need a ship (like Spring for example) to cross a ditch. Something smaller, build from well tested components would most often suit my needs.
 
-Maybe this will be a start. This very simple Router that can be used within Servlets or any other frontcontroller that needs routing capabilities (actually it is not bound to a specific environment). How this is possible? Simple, I just used generics.
+Maybe this will be a start (and there is a lot more, I know). This very simple Router that can be used within Servlets or any other frontcontroller that needs routing capabilities (actually it is not bound to a specific environment). How this is possible? Simple, I just used generics.
 
 ## How does it work
 Its usage is very simple (I do hope you like its simplicity). First you must have a good idea which paths you need for your requests, most likely it will be REST or REST like.
